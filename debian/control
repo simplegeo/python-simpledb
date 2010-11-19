@@ -10,6 +10,6 @@ Standards-Version: 3.8.4
 Package: python-simpledb
 Architecture: all
 XB-Python-Version: ${python:Versions}
-Depends: ${misc:Depends}, ${python:Depends}, python-httplib2, python-elementtree                                                                            
+Depends: ${misc:Depends}, ${python:Depends}, python-httplib2
 Provides: ${python:Provides}
 Description: A python client for simpledb
