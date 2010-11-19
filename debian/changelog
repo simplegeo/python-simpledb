@@ -1,3 +1,9 @@
+python-simplegeo (1.0-sg2) lucid; urgency=low
+
+  * UNRELEASED
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Fri, 19 Nov 2010 19:27:04 +0000
+
 python-simplegeo (1.0-sg0) unstable; urgency=low
 
   * Dummy entry for Hudson.
