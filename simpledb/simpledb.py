@@ -202,7 +202,7 @@ class SimpleDB(object):
 
 
     def __init__(self, aws_access_key, aws_secret_access_key, db='sdb.amazonaws.com', 
-                 secure=True, encoder=AttributeEncoder()):
+                 secure=True, encoder=AttributeEncoder(), consistent_reads=False):
         """
         Use your `aws_access_key` and `aws_secret_access_key` to create a connection to
         Amazon SimpleDB.
@@ -223,6 +223,7 @@ class SimpleDB(object):
         self.db = db
         self.http = httplib2.Http()
         self.encoder = encoder
+        self.consistent_reads = consistent_reads
 
     def _make_request(self, request):
         headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8', 
@@ -501,6 +502,10 @@ class SimpleDB(object):
             'DomainName': domain,
             'ItemName': item,
         }
+
+        if self.consistent_reads:
+            data['ConsistentRead'] = True
+
         if attributes:
             for i, attr in enumerate(attributes):
                 data['AttributeName.%s' % i] = attr
@@ -538,6 +543,9 @@ class SimpleDB(object):
             'Action': 'Select',
             'SelectExpression': expression,
         }
+        
+        if self.consistent_reads:
+            data['ConsistentRead'] = True
 
         while True:
             request = Request("POST", self._sdb_url(), data)
@@ -588,7 +596,7 @@ class where(object):
     def __init__(self, *args, **query):
         self.connector = self.default
         self.children = []
-        self.children.extend(args)
+        self.children.extend(args,)
         for key, value in query.iteritems():
             if '__' in key:
                 parts = key.split('__')
