@@ -1,3 +1,12 @@
+python-simpledb (1.0-sg10) lucid; urgency=low
+
+  [ dsmith ]
+  * We want to enable consistent reads if the client so desires it.
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Mon, 22 Nov 2010 20:41:23 +0000
+
 python-simpledb (1.0-sg9) lucid; urgency=low
 
   [ Derek Smith ]
