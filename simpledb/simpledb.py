@@ -390,6 +390,7 @@ class SimpleDB(object):
             'DomainName': domain,
             'ItemName': item,
         }
+
         idx = 0
         for attribute in attributes:
             name = attribute[0]
@@ -402,7 +403,16 @@ class SimpleDB(object):
                 data['Attribute.%s.Value' % idx] = value
                 if len(attribute) == 2 or attribute[2]:
                     data['Attribute.%s.Replace' % idx] = 'true'
+
+                    if len(attribute) == 4:
+                        data['Expected.%s.Name' % idx] = name
+                        data['Expected.%s.Value' % idx] = attribute[3]
+
+                elif len(attribute) == 4 and not attribute[2]:
+                    raise IllegalArgumentException('Conditional check requires Attribute.%s.Replace=true' % idx)
+
                 idx += 1
+
         request = Request("POST", self._sdb_url(), data)
         self._make_request(request)
 
@@ -985,7 +995,7 @@ class Item(DictMixin):
 
     def __getitem__(self, name):
         return self.attributes[name]
-    
+
     def __setitem__(self, name, value):
         self.attributes[name] = value
 
@@ -993,6 +1003,20 @@ class Item(DictMixin):
         if name in self.attributes:
             self.simpledb.delete_attributes(self.domain, self, {name: self.attributes[name]})
             del self.attributes[name]
+
+    def increment(self, name):
+        value = int(self.attributes.get(name, 0))
+        self.save_expected_value(name, value + 1, value)
+        return value + 1
+
+    def decrement(self, name):
+        value = int(self.attributes.get(name, 0))
+        self.save_expected_value(name, value - 1, value)
+        return value - 1
+
+    def save_expected_value(self, name, new_value, old_value):
+        self.simpledb.put_attributes(self.domain, self, [[name, new_value, True, old_value]])
+        self[name] = new_value
 
     def keys(self):
         return self.attributes.keys()
