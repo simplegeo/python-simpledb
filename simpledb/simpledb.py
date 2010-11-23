@@ -409,7 +409,7 @@ class SimpleDB(object):
                         data['Expected.%s.Value' % idx] = attribute[3]
 
                 elif len(attribute) == 4 and not attribute[2]:
-                    raise IllegalArgumentException('Conditional check requires Attribute.%s.Replace=true' % idx)
+                    raise Exception('Conditional check requires Attribute.%s.Replace=true' % idx)
 
                 idx += 1
 
@@ -992,6 +992,7 @@ class Item(DictMixin):
         self.domain = domain
         self.name = name
         self.attributes = attributes or {}
+        self.transactions = []
 
     def __getitem__(self, name):
         return self.attributes[name]
@@ -1005,21 +1006,34 @@ class Item(DictMixin):
             del self.attributes[name]
 
     def increment(self, name):
-        value = int(self.attributes.get(name, 0))
-        self.save_expected_value(name, value + 1, value)
+        value = 0
+        if self.attributes.has_key(name):
+            value = int(self.attributes.get(name))
+            new_value = value + 1
+            self.update_transactions(name, new_value, value)
+        else:
+            self.attributes[name] = 1
         return value + 1
 
     def decrement(self, name):
-        value = int(self.attributes.get(name, 0))
-        self.save_expected_value(name, value - 1, value)
+        value = 0
+        if self.attributes.has_key(name):
+            value = int(self.attributes.get(name))
+            new_value = value - 1
+            self.update_transactions(name, new_value, value)
+        else:
+            self.attributes[name] = -1
         return value - 1
 
-    def save_expected_value(self, name, new_value, old_value):
-        self.simpledb.put_attributes(self.domain, self, [[name, new_value, True, old_value]])
-        self[name] = new_value
+    def update_transactions(self, name, new_value, old_value):
+        self.transactions << [name, new_value, True, old_value]
 
     def keys(self):
         return self.attributes.keys()
 
     def save(self):
-        self.simpledb.put_attributes(self.domain, self, self.attributes)
+        if len(self.transactions):
+            self.simpledb.put_attributes(self.domain, self, self.transactions)
+            self.transactions = []
+        else:
+            self.simpledb.put_attributes(self.domain, self, self.attributes)
