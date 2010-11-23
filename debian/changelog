@@ -1,3 +1,12 @@
+python-simpledb (1.0-sg14) lucid; urgency=low
+
+  [ dsmith ]
+  * Added a way to sync multiple transactions in a single query.
+
+  [ SimpleGeo Nerds ]
+
+ -- SimpleGeo Nerds <nerds@simplegeo.com>  Tue, 23 Nov 2010 02:47:43 +0000
+
 python-simpledb (1.0-sg12) lucid; urgency=low
 
   [ dsmith ]
