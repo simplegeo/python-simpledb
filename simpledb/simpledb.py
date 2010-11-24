@@ -992,7 +992,7 @@ class Item(DictMixin):
         self.domain = domain
         self.name = name
         self.attributes = attributes or {}
-        self.transactions = []
+        self.transactions = {}
 
     def __getitem__(self, name):
         return self.attributes[name]
@@ -1009,31 +1009,34 @@ class Item(DictMixin):
         value = 0
         if self.attributes.has_key(name):
             value = int(self.attributes.get(name))
-            new_value = value + 1
-            self.update_transactions(name, new_value, value)
+            self.update_transactions(name, value + 1, value)
+            self.attributes[name] = value + 1
         else:
             self.attributes[name] = 1
+
         return value + 1
 
     def decrement(self, name):
         value = 0
         if self.attributes.has_key(name):
             value = int(self.attributes.get(name))
-            new_value = value - 1
-            self.update_transactions(name, new_value, value)
+            self.update_transactions(name, value - 1, value)
+            self.attributes[name] = value - 1
         else:
             self.attributes[name] = -1
         return value - 1
 
     def update_transactions(self, name, new_value, old_value):
-        self.transactions << [name, new_value, True, old_value]
+        if self.transactions.has_key(name):
+            self.save()
+        self.transactions[name] = [name, new_value, True, old_value]
 
     def keys(self):
         return self.attributes.keys()
 
     def save(self):
         if len(self.transactions):
-            self.simpledb.put_attributes(self.domain, self, self.transactions)
-            self.transactions = []
+            self.simpledb.put_attributes(self.domain, self, self.transactions.values())
+            self.transactions = {}
         else:
             self.simpledb.put_attributes(self.domain, self, self.attributes)
